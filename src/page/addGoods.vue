@@ -3,7 +3,7 @@
      	<head-top></head-top>
         <el-row style="margin-top: 20px;">
   			<el-col :span="14" :offset="4">
-  				<header class="form_header">选择食品种类</header>
+  				<!-- <header class="form_header">选择食品种类</header>
 	  			<el-form :model="categoryForm" ref="categoryForm" label-width="110px" class="form">
 		  			<el-row class="category_select">
 		  				<el-form-item label="食品种类">
@@ -35,19 +35,51 @@
 						<i class="el-icon-caret-bottom edit_icon" v-else slot="icon"></i>
 						<span>添加食品种类</span>
 					</div>
-	  			</el-form>
-	  			<header class="form_header">添加食品</header>
-	  			<el-form :model="foodForm" :rules="foodrules" ref="foodForm" label-width="110px" class="form food_form">
-	  				<el-form-item label="食品名称" prop="name">
-						<el-input v-model="foodForm.name"></el-input>
+	  			</el-form> -->
+	  			<header class="form_header">添加广告</header>
+	  			<el-form :model="adDTO" :rules="foodrules" ref="foodForm" label-width="110px" class="form food_form">
+	  				<el-form-item label="这条广告属于哪个店？" prop="shopDTO">
+	  					<el-select v-model="adDTO.shopDTO.shopId" placeholder="请选择" width="500">
+						   <el-option
+						     v-for="item in shopDTOList"
+						     :key="item.shopId"
+						     :label="'店名：' + item.shopName + ', 描述:' + item.shopDescription + ', 地址:' + item.shopCity + ',' + item.shopAddress"
+						     :value="item.shopId">
+						   </el-option>
+						 </el-select>
 					</el-form-item>
-					<el-form-item label="食品活动" prop="activity">
-						<el-input v-model="foodForm.activity"></el-input>
+	  				<el-form-item label="广告名称" prop="adName">
+						<el-input v-model="adDTO.adName"></el-input>
 					</el-form-item>
-					<el-form-item label="食品详情" prop="description">
-						<el-input v-model="foodForm.description"></el-input>
+					<el-form-item label="广告类型" style="white-space: nowrap;" prop="adType">
+						<el-radio class="radio" v-model="adDTO.adType" label="0">餐饮类</el-radio>
+						<el-radio class="radio" v-model="adDTO.adType" label="1">服装类</el-radio>
+  						<el-radio class="radio" v-model="adDTO.adType" label="2">女性类</el-radio>
 					</el-form-item>
-					<el-form-item label="上传食品图片">
+					<el-form-item style="white-space: nowrap;">
+						<el-radio class="radio" v-model="adDTO.adType" label="3">儿童类</el-radio>
+  						<el-radio class="radio" v-model="adDTO.adType" label="4">户外类</el-radio>
+  						<el-radio class="radio" v-model="adDTO.adType" label="5">宠物类</el-radio>
+					</el-form-item>
+
+					<el-form-item label="广告描述" prop="adDescription">
+						<el-input v-model="adDTO.adDescription"></el-input>
+					</el-form-item>
+					<el-form-item label="广告时长" style="white-space: nowrap;" prop="adTime">
+						<el-radio class="radio" v-model="adDTO.adTime" label="5">5秒</el-radio>
+						<el-radio class="radio" v-model="adDTO.adTime" label="10">10秒</el-radio>
+  						<el-radio class="radio" v-model="adDTO.adTime" label="15">15秒</el-radio>
+  						<el-radio class="radio" v-model="adDTO.adTime" label="20">20秒</el-radio>
+					</el-form-item>
+					<el-form-item label="广告费用" prop="adCash">
+						<el-input-number v-model="adDTO.adCash" :min="0" :max="1000"></el-input-number>
+						<p>
+							<span v-if="adDTO.adTime == 20">能支持 {{adDTO.adCash / 0.2}} 次播放， </span>
+							<span v-else>能支持 {{adDTO.adCash / 0.1}} 次播放， </span>
+							<span> 收费标准为 {{ adDTO.adTime == 20 ? 0.2 : 0.1}} 元/条</span>
+						</p>
+					</el-form-item>
+					<!-- <el-form-item label="上传广告图片">
 						<el-upload
 						  class="avatar-uploader"
 						  :action="baseUrl + '/v1/addimg/food'"
@@ -57,78 +89,24 @@
 						  <img v-if="foodForm.image_path" :src="baseImgPath + foodForm.image_path" class="avatar">
 						  <i v-else class="el-icon-plus avatar-uploader-icon"></i>
 						</el-upload>
+					</el-form-item> -->
+					<el-form-item label="上传广告图片" prop="adPicture">
+						<el-upload
+						  class="avatar-uploader"
+						  action=""
+						  :before-upload="beforeUpload"
+						  :on-preview="handlePictureCardPreview"
+						  :on-success="uploadImg"
+						  :limit="1"
+						  :on-remove="handleRemove">
+						  <img v-if="dialogImageUrl" :src="dialogImageUrl" class="avatar" style="width: 200px;height: 450px">
+						  <i class="el-icon-plus avatar-uploader-icon"></i>
+						</el-upload>
 					</el-form-item>
-					<el-form-item label="食品特点">
-						<el-select v-model="foodForm.attributes" multiple placeholder="请选择">
-						    <el-option
-						      	v-for="item in attributes"
-						      	:key="item.value"
-						      	:label="item.label"
-						      	:value="item.value">
-						    </el-option>
-					 	</el-select>
-					</el-form-item>
-					<el-form-item label="食品规格">
-						<el-radio class="radio" v-model="foodSpecs" label="one">单规格</el-radio>
-  						<el-radio class="radio" v-model="foodSpecs" label="more">多规格</el-radio>
-					</el-form-item>
-					<el-row v-if="foodSpecs == 'one'">
-						<el-form-item label="包装费">
-							<el-input-number v-model="foodForm.specs[0].packing_fee" :min="0" :max="100"></el-input-number>
-						</el-form-item>
-						<el-form-item label="价格">
-							<el-input-number v-model="foodForm.specs[0].price" :min="0" :max="10000"></el-input-number>
-						</el-form-item>
-					</el-row>
-					<el-row v-else style="overflow: auto; text-align: center;">
-						<el-button type="primary" @click="dialogFormVisible = true" style="margin-bottom: 10px;">添加规格</el-button>
-						<el-table
-					    :data="foodForm.specs"
-					    style="margin-bottom: 20px;"
-					    :row-class-name="tableRowClassName">
-						    <el-table-column
-						      prop="specs"
-						      label="规格">
-						    </el-table-column>
-						    <el-table-column
-						      prop="packing_fee"
-						      label="包装费">
-						    </el-table-column>
-						    <el-table-column
-						      prop="price"
-						      label="价格">
-						    </el-table-column>
-						    <el-table-column label="操作" >
-						    <template slot-scope="scope">
-						        <el-button
-						          size="small"
-						          type="danger"
-						          @click="handleDelete(scope.$index)">删除</el-button>
-						    </template>
-						    </el-table-column>
-						</el-table>
-					</el-row>
 					<el-form-item>
-						<el-button type="primary" @click="addFood('foodForm')">确认添加食品</el-button>
+						<el-button type="primary" @click="addAdNow">确认添加广告</el-button>
 					</el-form-item>
 	  			</el-form>
-	  			<el-dialog title="添加规格" v-model="dialogFormVisible">
-				  	<el-form :rules="specsFormrules" :model="specsForm">
-					    <el-form-item label="规格" label-width="100px" prop="specs">
-					     	<el-input v-model="specsForm.specs" auto-complete="off"></el-input>
-					    </el-form-item>
-					    <el-form-item label="包装费" label-width="100px">
-							<el-input-number v-model="specsForm.packing_fee" :min="0" :max="100"></el-input-number>
-						</el-form-item>
-						<el-form-item label="价格" label-width="100px">
-							<el-input-number v-model="specsForm.price" :min="0" :max="10000"></el-input-number>
-						</el-form-item>
-				  	</el-form>
-				  <div slot="footer" class="dialog-footer">
-				    <el-button @click="dialogFormVisible = false">取 消</el-button>
-				    <el-button type="primary" @click="addspecs">确 定</el-button>
-				  </div>
-				</el-dialog>
   			</el-col>
   		</el-row>
     </div>
@@ -136,12 +114,13 @@
 
 <script>
  	import headTop from '@/components/headTop'
-    import {getCategory, addCategory, addFood} from '@/api/getData'
-    import {baseUrl, baseImgPath} from '@/config/env'
+    import {getCategory, addCategory, addFood , addAd, shopList, uploadPicture} from '@/api/getData'
+    import {baseUrl, baseImgPath, base} from '@/config/env'
     export default {
     	data(){
     		return {
     			baseUrl,
+    			base,
     			baseImgPath,
     			restaurant_id: 1,
     			categoryForm: {
@@ -162,10 +141,41 @@
 			          	price: 20,
     				}],
     			},
+    			adDTO: {
+    				shopDTO: {
+    					shopId: null
+    				},
+    				shopId: 68,
+    				userId: 131,
+    				adName: '',
+    				adType: null,
+    				adDescription: '',
+    				adCash: 0,
+    				adPicture: '',
+    			},
+    			shopDTOList: [],
     			foodrules: {
-    				name: [
-						{ required: true, message: '请输入食品名称', trigger: 'blur' },
+    				adName: [
+						{ required: true, message: '请输入广告名称', trigger: 'blur' },
 					],
+					adType: [
+						{ required: true, message: '请选择广告类型', trigger: 'blur' },
+					],
+					adDescription: [
+						{ required: true, message: '请输入广告描述', trigger: 'blur' },
+					],
+					adTime: [
+						{ required: true, message: '请选择广告时长', trigger: 'blur' },
+					],
+    				adCash: [
+						{ required: true, message: '请选择投放费用', trigger: 'blur' },
+					],
+					shopDTO: [
+						{ required: true, message: '请选择这条广告发自哪个店铺', trigger: 'blur' },
+					],
+					adPicture: [
+						{ required: true, message: '请选择这条广告的牌面', trigger: 'blur' },
+					]
     			},
     			attributes: [{
 		          	value: '新',
@@ -186,38 +196,16 @@
 		        	specs: [
 						{ required: true, message: '请输入规格', trigger: 'blur' },
 					],
-		        }
+		        },
+		        dialogImageUrl: '',
+        		dialogVisible: false
     		}
     	},
     	components: {
     		headTop,
     	},
     	created(){
-    		if (this.$route.query.restaurant_id) {
-    			this.restaurant_id = this.$route.query.restaurant_id;
-    		}else{
-    			this.restaurant_id = Math.ceil(Math.random()*10);
-    			this.$msgbox({
-		          title: '提示',
-		          message: '添加食品需要选择一个商铺，先去就去选择商铺吗？',
-		          showCancelButton: true,
-		          confirmButtonText: '确定',
-		          cancelButtonText: '取消',
-		          beforeClose: (action, instance, done) => {
-		            if (action === 'confirm') {
-		              this.$router.push('/shopList');
-		              done();
-		            } else {
-		            	this.$message({
-				            type: 'info',
-				            message: '取消'
-				        });
-		              	done();
-		            }
-		          }
-		        })
-    		}
-    		this.initData();
+    		this.getShopList()
     	},
     	computed: {
     		selectValue: function (){
@@ -241,6 +229,51 @@
     				console.log(err)
     			}
     		},
+    		addAdNow() {
+    			console.log("adDTO",this.adDTO)
+    			this.addAd()
+    		},
+    		async addAd() {
+    			const res = await addAd(this.adDTO);
+    			console.log("response", res)
+    			if (res.status == 200) {
+    				if (res.data.code == 31) {
+    					this.open()
+    				} else if (res.data.code ==30) {
+    					this.$alert('添加失败，请重试', {
+				          confirmButtonText: '确定',
+				          callback: action => {}
+				        });
+    				}
+    			}
+    		},
+    		open() {
+		       	this.$alert('已添加广告，即将跳转到广告列表', {
+		       		confirmButtonText: '确定',
+		        	callback: action => {
+		          		this.$router.push('/foodList');
+		        	}
+		      	});
+		    },
+    		async getShopList() {
+    			const response = await shopList({userId: 131, current: 1, size: 100});
+    			// this.shopDTOList = response.data.data
+    			response.data.data.forEach(item => {
+            		if (item.shopStatus == 1) {
+            			this.shopDTOList.push(item)
+            		}
+            	})
+    		},
+    		handleRemove(file, fileList) {
+		        console.log(file, fileList);
+		    },
+		    handlePictureCardPreview(file) {
+		        // this.dialogImageUrl = file.url;
+		        // this.dialogVisible = true;
+		    },
+		    shopSelect(val) {
+		    	console.log("选择建议内容", val)
+		    },
 		    addCategoryFun(){
 		    	this.showAddCategory = !this.showAddCategory;
 		    },
@@ -278,11 +311,30 @@
 				});
 			},
 			uploadImg(res, file) {
-				if (res.status == 1) {
-					this.foodForm.image_path = res.image_path;
-				}else{
-					this.$message.error('上传图片失败！');
-				}
+				// if (res.status == 1) {
+				// 	this.foodForm.image_path = res.image_path;
+				// 	this.dialogImageUrl = res.image_path;
+				// }else{
+				// 	this.$message.error('上传图片失败！');
+				// }
+			},
+			beforeUpload(file){
+				  console.log("file:",file)
+			      let fd = new FormData();//通过form数据格式来传
+			      fd.append("file", file); //传文件
+				  console.log("file:",fd)
+			      this.$axios(({
+			        method: 'POST',
+			        url: 'http://localhost:8081/upload',
+			        data: fd
+				  })).then(res=>{
+					console.log("res",res)
+
+					// this.foodForm.image_path = res.image_path;
+					this.dialogImageUrl = res.data
+					this.adDTO.adPitcure = res.data
+					console.log(this.dialogImageUrl)
+				  })
 			},
 			beforeImgUpload(file) {
 				const isRightType = (file.type === 'image/jpeg') || (file.type === 'image/png');

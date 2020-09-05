@@ -14,6 +14,8 @@ export default async(url = '', data = {}, type = 'GET', method = 'fetch') => {
 			dataStr = dataStr.substr(0, dataStr.lastIndexOf('&'));
 			url = url + '?' + dataStr;
 		}
+
+		//console.log("url:",url,"     dataStr:", dataStr,"     data :", data,)
 	}
 
 	if (window.fetch && method == 'fetch') {
@@ -37,12 +39,14 @@ export default async(url = '', data = {}, type = 'GET', method = 'fetch') => {
 		try {
 			const response = await fetch(url, requestConfig);
 			const responseJson = await response.json();
+			// console.log("目标URL：",url," 返回体：",responseJson)
 			return responseJson
 		} catch (error) {
 			throw new Error(error)
 		}
 	} else {
 		return new Promise((resolve, reject) => {
+			console.log("url",url, "不是fetch");
 			let requestObj;
 			if (window.XMLHttpRequest) {
 				requestObj = new XMLHttpRequest();

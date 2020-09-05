@@ -20,6 +20,9 @@ const vueEdit = r => require.ensure([], () => r(require('@/page/vueEdit')), 'vue
 const adminSet = r => require.ensure([], () => r(require('@/page/adminSet')), 'adminSet');
 const sendMessage = r => require.ensure([], () => r(require('@/page/sendMessage')), 'sendMessage');
 const explain = r => require.ensure([], () => r(require('@/page/explain')), 'explain');
+const violate = r => require.ensure([], () => r(require('@/page/violate')), 'violate');
+const myAdList = r => require.ensure([], () => r(require('@/page/myAdList')), 'myAdList');
+const myNotice = r => require.ensure([], () => r(require('@/page/myNotice')), 'myNotice');
 
 const routes = [
 	{
@@ -90,6 +93,18 @@ const routes = [
 			path: '/explain',
 			component: explain,
 			meta: ['说明', '说明'],
+		},{
+			path: '/violate',
+			component: violate,
+			meta: ['违规处理', '处理队列'],
+		},{
+			path: '/myAdList',
+			component: myAdList,
+			meta: ['我的', '我的投放'],
+		},{
+			path: '/myNotice',
+			component: myNotice,
+			meta: ['我的', '系统消息'],
 		}]
 	}
 ]

@@ -36,7 +36,7 @@
                       <el-form-item label="厌恶数">
                         <span>{{ props.row.dislikeCount }}</span>
                       </el-form-item>
-                      <el-form-item label="开始时间">
+                      <el-form-item label="投放时间">
                         <span>{{ props.row.gmtCreateFormat }}</span>
                       </el-form-item>
                       <el-form-item label="广告图片">
@@ -105,14 +105,14 @@
                         <el-input v-model="selectTable.description"></el-input>
                     </el-form-item>
                     <el-form-item label="食品分类" label-width="100px">
-	                    <el-select v-model="selectIndex" :placeholder="selectMenu.label" @change="handleSelect">
-						    <el-option
-						      v-for="item in menuOptions"
-						      :key="item.value"
-						      :label="item.label"
-						      :value="item.index">
-						    </el-option>
-						</el-select>
+                      <el-select v-model="selectIndex" :placeholder="selectMenu.label" @change="handleSelect">
+                <el-option
+                  v-for="item in menuOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.index">
+                </el-option>
+            </el-select>
                     </el-form-item>
                     <el-form-item label="食品图片" label-width="100px">
                         <el-upload
@@ -127,33 +127,33 @@
                     </el-form-item>
                 </el-form>
                 <el-row style="overflow: auto; text-align: center;">
-	                <el-table
-				    :data="specs"
-				    style="margin-bottom: 20px;"
-				    :row-class-name="tableRowClassName">
-					    <el-table-column
-					      prop="specs"
-					      label="规格">
-					    </el-table-column>
-					    <el-table-column
-					      prop="packing_fee"
-					      label="包装费">
-					    </el-table-column>
-					    <el-table-column
-					      prop="price"
-					      label="价格">
-					    </el-table-column>
-					    <el-table-column label="操作" >
-					    <template slot-scope="scope">
-					        <el-button
-					          size="small"
-					          type="danger"
-					          @click="deleteSpecs(scope.$index)">删除</el-button>
-					    </template>
-					    </el-table-column>
-					</el-table>
-					<el-button type="primary" @click="specsFormVisible = true" style="margin-bottom: 10px;">添加规格</el-button>
-				</el-row>
+                  <el-table
+            :data="specs"
+            style="margin-bottom: 20px;"
+            :row-class-name="tableRowClassName">
+              <el-table-column
+                prop="specs"
+                label="规格">
+              </el-table-column>
+              <el-table-column
+                prop="packing_fee"
+                label="包装费">
+              </el-table-column>
+              <el-table-column
+                prop="price"
+                label="价格">
+              </el-table-column>
+              <el-table-column label="操作" >
+              <template slot-scope="scope">
+                  <el-button
+                    size="small"
+                    type="danger"
+                    @click="deleteSpecs(scope.$index)">删除</el-button>
+              </template>
+              </el-table-column>
+          </el-table>
+          <el-button type="primary" @click="specsFormVisible = true" style="margin-bottom: 10px;">添加规格</el-button>
+        </el-row>
               <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogFormVisible = false">取 消</el-button>
                 <el-button type="primary" @click="updateFood">确 定</el-button>
@@ -162,22 +162,22 @@
 
 
             <el-dialog title="添加规格" v-model="specsFormVisible">
-			  	<el-form :rules="specsFormrules" :model="specsForm">
-				    <el-form-item label="规格" label-width="100px" prop="specs">
-				     	<el-input v-model="specsForm.specs" auto-complete="off"></el-input>
-				    </el-form-item>
-				    <el-form-item label="包装费" label-width="100px">
-						<el-input-number v-model="specsForm.packing_fee" :min="0" :max="100"></el-input-number>
-					</el-form-item>
-					<el-form-item label="价格" label-width="100px">
-						<el-input-number v-model="specsForm.price" :min="0" :max="10000"></el-input-number>
-					</el-form-item>
-			  	</el-form>
-			  <div slot="footer" class="dialog-footer">
-			    <el-button @click="specsFormVisible = false">取 消</el-button>
-			    <el-button type="primary" @click="addspecs">确 定</el-button>
-			  </div>
-			</el-dialog>
+          <el-form :rules="specsFormrules" :model="specsForm">
+            <el-form-item label="规格" label-width="100px" prop="specs">
+              <el-input v-model="specsForm.specs" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="包装费" label-width="100px">
+            <el-input-number v-model="specsForm.packing_fee" :min="0" :max="100"></el-input-number>
+          </el-form-item>
+          <el-form-item label="价格" label-width="100px">
+            <el-input-number v-model="specsForm.price" :min="0" :max="10000"></el-input-number>
+          </el-form-item>
+          </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="specsFormVisible = false">取 消</el-button>
+          <el-button type="primary" @click="addspecs">确 定</el-button>
+        </div>
+      </el-dialog>
         </div>
     </div>
 </template>
@@ -285,7 +285,7 @@
                 const response = await adList({userId: this.user.userId, current: this.currentPage, size: this.limit});
                 this.tableData = [];
                 const adLists = response.data.data;
-                this.count = response.data.total
+                this.count = response.data.current
                 adLists.forEach((item, index) => {
                     const tableData = {};
                     tableData.userId = item.userId;
@@ -306,6 +306,7 @@
                     tableData.adCount = '' + item.issueCount + '/' + item.clickCount + '/' + item.likeCount + '/' + item.dislikeCount;
                     tableData.gmtCreate = item.gmtCreate;
                     tableData.gmtCreateFormat = timestampToTime(item.gmtCreate);
+
                     tableData.gmtModified = item.gmtModified;
                     this.tableData.push(tableData);
                 })
@@ -388,7 +389,6 @@
                 // }
             },
             handleServiceAvatarScucess(res, file) {
-              console.log('res',res,'file',file)
                 if (res.status == 1) {
                     this.selectTable.image_path = res.image_path;
                 }else{
@@ -455,41 +455,41 @@
                 selectMenu: {},
                 selectIndex: null,
                 specsForm: {
-		          	specs: '',
-		          	packing_fee: 0,
-		          	price: 20,
-		        },
+                specs: '',
+                packing_fee: 0,
+                price: 20,
+            },
                 specsFormrules: {
-		        	specs: [
-						{ required: true, message: '请输入规格', trigger: 'blur' },
-					],
-		        },
-		        specsFormVisible: false,
+              specs: [
+            { required: true, message: '请输入规格', trigger: 'blur' },
+          ],
+            },
+            specsFormVisible: false,
                 expendRow: [],
             }
         },
         created(){
-        	this.restaurant_id = this.$route.query.restaurant_id;
+          this.restaurant_id = this.$route.query.restaurant_id;
             this.initData();
         },
         computed: {
-        	specs: function (){
-        		let specs = [];
-        		if (this.selectTable.specfoods) {
-	        		this.selectTable.specfoods.forEach(item => {
-	        			specs.push({
-	        				specs: item.specs_name,
-	        				packing_fee: item.packing_fee,
-	        				price: item.price,
-	        			})
-	        		})
-        		}
-        		return specs
-        	}
+          specs: function (){
+            let specs = [];
+            if (this.selectTable.specfoods) {
+              this.selectTable.specfoods.forEach(item => {
+                specs.push({
+                  specs: item.specs_name,
+                  packing_fee: item.packing_fee,
+                  price: item.price,
+                })
+              })
+            }
+            return specs
+          }
         },
-    	components: {
-    		headTop,
-    	},
+      components: {
+        headTop,
+      },
         methods: {
             async initData(){
                 try{
@@ -505,14 +505,14 @@
                 }
             },
             async getMenu(){
-            	this.menuOptions = [];
+              this.menuOptions = [];
                 try{
                     const menu = await getMenu({restaurant_id: this.selectTable.restaurant_id, allMenu: true});
                     menu.forEach((item, index) => {
                         this.menuOptions.push({
-                        	label: item.name,
-                        	value: item.id,
-                        	index,
+                          label: item.name,
+                          value: item.id,
+                          index,
                         })
                     })
                 }catch(err){
@@ -538,23 +538,23 @@
                 })
             },
             tableRowClassName(row, index) {
-		        if (index === 1) {
-		        	return 'info-row';
-		        } else if (index === 3) {
-		        	return 'positive-row';
-		        }
-		        return '';
-		    },
-		    addspecs(){
-				this.specs.push({...this.specsForm});
-				this.specsForm.specs = '';
-				this.specsForm.packing_fee = 0;
-				this.specsForm.price = 20;
-				this.specsFormVisible = false;
-			},
-			deleteSpecs(index){
-				this.specs.splice(index, 1);
-			},
+            if (index === 1) {
+              return 'info-row';
+            } else if (index === 3) {
+              return 'positive-row';
+            }
+            return '';
+        },
+        addspecs(){
+        this.specs.push({...this.specsForm});
+        this.specsForm.specs = '';
+        this.specsForm.packing_fee = 0;
+        this.specsForm.price = 20;
+        this.specsFormVisible = false;
+      },
+      deleteSpecs(index){
+        this.specs.splice(index, 1);
+      },
             handleSizeChange(val) {
                 console.log(`每页 ${val} 条`);
             },
@@ -564,20 +564,20 @@
                 this.getFoods()
             },
             expand(row, status){
-            	if (status) {
-            		this.getSelectItemData(row)
-            	}else{
+              if (status) {
+                this.getSelectItemData(row)
+              }else{
                     const index = this.expendRow.indexOf(row.index);
                     this.expendRow.splice(index, 1)
                 }
             },
             handleEdit(row) {
-            	this.getSelectItemData(row, 'edit')
+              this.getSelectItemData(row, 'edit')
                 this.dialogFormVisible = true;
             },
             async getSelectItemData(row, type){
-            	const restaurant = await getResturantDetail(row.restaurant_id);
-            	const category = await getMenuById(row.category_id)
+              const restaurant = await getResturantDetail(row.restaurant_id);
+              const category = await getMenuById(row.category_id)
                 this.selectTable = {...row, ...{restaurant_name: restaurant.name, restaurant_address: restaurant.address, category_name: category.name}};
 
                 this.selectMenu = {label: category.name, value: row.category_id}
@@ -586,12 +586,12 @@
                     this.expendRow.push(row.index);
                 })
                 if (type == 'edit' && this.restaurant_id != row.restaurant_id) {
-                	this.getMenu();
+                  this.getMenu();
                 }
             },
             handleSelect(index){
-            	this.selectIndex = index;
-            	this.selectMenu = this.menuOptions[index];
+              this.selectIndex = index;
+              this.selectMenu = this.menuOptions[index];
             },
             async handleDelete(index, row) {
                 try{
@@ -635,8 +635,8 @@
             async updateFood(){
                 this.dialogFormVisible = false;
                 try{
-                	const subData = {new_category_id: this.selectMenu.value, specs: this.specs};
-                	const postData = {...this.selectTable, ...subData};
+                  const subData = {new_category_id: this.selectMenu.value, specs: this.specs};
+                  const postData = {...this.selectTable, ...subData};
                     const res = await updateFood(postData)
                     if (res.status == 1) {
                         this.$message({
@@ -659,7 +659,7 @@
 </script> -->
 
 <style lang="less">
-	@import '../style/mixin';
+  @import '../style/mixin';
     .demo-table-expand {
         font-size: 0;
     }

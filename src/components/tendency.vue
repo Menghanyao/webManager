@@ -33,7 +33,7 @@
                         trigger: 'axis'
                     },
                     legend: {
-                        data:['新注册用户', '新增订单', '新增管理员']
+                        data:['新注册用户', '新增广告', '新增商店']
                     },
                     toolbox: {
                         show: true,
@@ -56,7 +56,7 @@
                           type: 'value',
                           name: '用户',
                           min: 0,
-                          max: 200,
+                          max: 50,
                           position: 'left',
                           axisLine: {
                               lineStyle: {
@@ -71,7 +71,7 @@
                           type: 'value',
                           name: '订单',
                           min: 0,
-                          max: 200,
+                          max: 50,
                           position: 'right',
                           axisLine: {
                               lineStyle: {
@@ -97,7 +97,7 @@
                             },
                         },
                         {
-                            name:'新增订单',
+                            name:'新增广告',
                             type:'line',
                             data:this.sevenDate[1],
                             yAxisIndex: 1,
@@ -109,7 +109,7 @@
                             },
                         },
                         {
-                            name:'新增管理员',
+                            name:'新增商店',
                             type:'line',
                             data:this.sevenDate[2],
                             yAxisIndex: 1,

@@ -8,58 +8,60 @@
                 <el-table-column type="expand">
                   <template slot-scope="props">
                     <el-form label-position="left" inline class="demo-table-expand">
-                      <el-form-item label="店铺名称">
-                        <span>{{ props.row.name }}</span>
+
+                      <el-form-item label="商家名称">
+                        <span>{{ props.row.shopName }}</span>
                       </el-form-item>
                       <el-form-item label="店铺地址">
-                        <span>{{ props.row.address }}</span>
+                        <span>{{ props.row.shopAddress }}</span>
                       </el-form-item>
-                      <el-form-item label="店铺介绍">
-                        <span>{{ props.row.description }}</span>
+                      <el-form-item label="商家类型">
+                        <span>{{ shopTypeToText(props.row.shopType) }}</span>
                       </el-form-item>
-                      <el-form-item label="店铺 ID">
-                        <span>{{ props.row.id }}</span>
+                      <el-form-item label="经营范围">
+                        <span>{{ shopArrangeToText(props.row.shopArrange) }}</span>
                       </el-form-item>
                       <el-form-item label="联系电话">
-                        <span>{{ props.row.phone }}</span>
+                        <span>{{ props.row.shopPhone }}</span>
                       </el-form-item>
-                      <el-form-item label="评分">
-                        <span>{{ props.row.rating }}</span>
+                      <el-form-item label="金额">
+                        <span>{{ props.row.shopCash }}</span>
                       </el-form-item>
-                      <el-form-item label="销售量">
-                        <span>{{ props.row.recent_order_num }}</span>
-                      </el-form-item>
-                      <el-form-item label="分类">
-                        <span>{{ props.row.category }}</span>
+                      <el-form-item label="开店时间">
+                        <span>{{ props.row.gmtCreate1 }}</span>
                       </el-form-item>
                     </el-form>
                   </template>
                 </el-table-column>
                 <el-table-column
-                  label="店铺名称"
-                  prop="name">
+                  label="店铺ID"
+                  prop="shopId">
                 </el-table-column>
                 <el-table-column
-                  label="店铺地址"
-                  prop="address">
+                  label="店铺名称"
+                  prop="shopName">
                 </el-table-column>
                 <el-table-column
                   label="店铺介绍"
-                  prop="description">
+                  prop="shopDescription">
                 </el-table-column>
-                <el-table-column label="操作" width="200">
+                <el-table-column
+                  label="店铺状态">
                   <template slot-scope="scope">
-                    <el-button
+                      <span v-if="scope.row.shopStatus == 1">正常</span>
+                      <span v-if="scope.row.shopStatus == 0">封禁中</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="200" align="center">
+                  <template slot-scope="scope">
+                    <el-button v-if="scope.row.shopStatus == 1"
                       size="mini"
-                      @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                    <el-button
-                      size="mini"
-                      type="Success"
-                      @click="addFood(scope.$index, scope.row)">添加食品</el-button>
-                    <el-button
+                      @click="handleEdit(scope.$index, scope.row)">充值</el-button>
+                    <el-button v-if="scope.row.shopStatus == 1"
                       size="mini"
                       type="danger"
                       @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                    <span v-if="scope.row.shopStatus == 0">不能进行操作</span>
                   </template>
                 </el-table-column>
             </el-table>
@@ -68,8 +70,9 @@
                   @size-change="handleSizeChange"
                   @current-change="handleCurrentChange"
                   :current-page="currentPage"
-                  :page-size="20"
-                  layout="total, prev, pager, next"
+                  :page-sizes="[5, 10, 15, 20]"
+                  :page-size="limit"
+                  layout="total, sizes, prev, pager, next, jumper"
                   :total="count">
                 </el-pagination>
             </div>
@@ -125,7 +128,274 @@
 <script>
     import headTop from '../components/headTop'
     import {baseUrl, baseImgPath} from '@/config/env'
-    import {cityGuess, getResturants, getResturantsCount, foodCategory, updateResturant, searchplace, deleteResturant} from '@/api/getData'
+    import {cityGuess, getResturants, getResturantsCount, foodCategory, updateResturant, searchplace, deleteResturant, shopList, timestampToTime, getUserTypeName, shopSaveMoney} from '@/api/getData'
+
+    export default {
+        data(){
+            return {
+                baseUrl,
+                baseImgPath,
+                city: {},
+                offset: 0,
+                limit: 20,
+                count: 0,
+                tableData: [],
+                currentPage: 1,
+                selectTable: {},
+                dialogFormVisible: false,
+                categoryOptions: [],
+                selectedCategory: [],
+                address: {},
+                Cash: {
+                    index : null,
+                    shopId: null,
+                    shopCash: 0
+                },
+                user: {}
+            }
+        },
+        created(){
+            this.user = this.$cookies.get("cookiesUser")
+            this.initData();
+        },
+        components: {
+            headTop,
+        },
+        methods: {
+            async initData(){
+                try{
+                    this.getShopList();
+                }catch(err){
+                    console.log('获取数据失败', err);
+                }
+            },
+            async getCategory(){
+                try{
+                    const categories = await foodCategory();
+                    categories.forEach(item => {
+                        if (item.sub_categories.length) {
+                            const addnew = {
+                                value: item.name,
+                                label: item.name,
+                                children: []
+                            }
+                            item.sub_categories.forEach((subitem, index) => {
+                                if (index == 0) {
+                                    return
+                                }
+                                addnew.children.push({
+                                    value: subitem.name,
+                                    label: subitem.name,
+                                })
+                            })
+                            this.categoryOptions.push(addnew)
+                        }
+                    })
+                }catch(err){
+                    console.log('获取商铺种类失败', err);
+                }
+            },
+            async getShopList(){
+                // const {latitude, longitude} = this.city;
+                const response = await shopList({userId: this.user.userId, current: this.currentPage, size: this.limit});
+                this.tableData = [];
+                const shopLists = response.data.data;
+                this.count = response.data.total;
+                this.currentPage = response.data.current;
+                let index = 0;
+                shopLists.forEach(item => {
+                    const tableData = {};
+                    tableData.index = index++;
+                    tableData.shopId = item.shopId;
+                    tableData.shopName = item.shopName;
+                    tableData.shopStatus = item.shopStatus;
+                    tableData.shopDescription = item.shopDescription;
+
+                    tableData.shopAddress = item.shopAddress;
+                    tableData.shopType = item.shopType;
+                    tableData.shopArrange = item.shopArrange;
+                    tableData.shopPhone = item.shopPhone;
+                    tableData.shopCash = item.shopCash;
+                    tableData.gmtCreate = item.gmtCreate;
+                    tableData.gmtCreate1 = timestampToTime(item.gmtCreate);
+                    this.tableData.push(tableData);
+                })
+            },
+            shopTypeToText(val) {
+                switch (val) {
+                    case 0: 
+                        return "实体店"
+                    case 1: 
+                        return "网店"
+                    case 2: 
+                        return "活动店铺"
+                }
+            },
+            shopArrangeToText(val) {
+                switch (val) {
+                    case 0: 
+                        return "餐饮类"
+                    case 1: 
+                        return "衣装类"
+                    case 2: 
+                        return "女性类"
+                    case 3: 
+                        return "儿童类"
+                    case 4: 
+                        return "户外类"
+                    case 5: 
+                        return "宠物类"
+                }
+            },
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                this.limit = val;
+                this.getShopList();
+            },
+            handleCurrentChange(val) {
+                this.currentPage = val;
+                this.getShopList()
+            },
+            handleEdit(index, row) {
+                console.log("充值:")
+                let shop = row
+                this.Cash.index = row.index
+                this.Cash.shopId = row.shopId
+                this.$prompt('给店铺"'+ shop.shopName +'"充值，请输入充值金额', '提示', {
+                  confirmButtonText: '确定',
+                  cancelButtonText: '取消',
+                  inputPattern: /^[0-9]*$/,
+                  inputErrorMessage: '只能输入数字'
+                }).then(({ value }) => {
+                    console.log("value:",value)
+                    // _this.addCash(shopId, shopCash)
+                    this.Cash.shopCash = value
+                    this.addCash()
+                }).catch(() => {
+                  this.$message({
+                    type: 'info',
+                    message: '取消充值'
+                  });       
+                });
+
+
+                // this.selectTable = row;
+                // this.address.address = row.address;
+                // this.dialogFormVisible = true;
+                // this.selectedCategory = row.category.split('/');
+                // if (!this.categoryOptions.length) {
+                //     this.getCategory();
+                // }
+            },
+            async addCash() {
+               const res = await shopSaveMoney({shopId: this.Cash.shopId, shopCash: this.Cash.shopCash})
+               console.log("res:",res)
+               if (res.data.code == 1) {
+                  this.getShopList()
+                  this.$message({
+                    type: 'success',
+                    message: '充值金额: ' + this.Cash.shopCash
+                  });
+               } else {
+                this.$message({
+                    type: 'error',
+                    message: '网络出现问题，请再试试: '
+                  });
+               }
+            },
+            addFood(index, row){
+                // this.$router.push({ path: 'addGoods', query: { restaurant_id: row.id }})
+            },
+            async handleDelete(index, row) {
+                // try{
+                //     const res = await deleteResturant(row.id);
+                //     if (res.status == 1) {
+                //         this.$message({
+                //             type: 'success',
+                //             message: '删除店铺成功'
+                //         });
+                //         this.tableData.splice(index, 1);
+                //     }else{
+                //         throw new Error(res.message)
+                //     }
+                // }catch(err){
+                //     this.$message({
+                //         type: 'error',
+                //         message: err.message
+                //     });
+                //     console.log('删除店铺失败')
+                // }
+            },
+            async querySearchAsync(queryString, cb) {
+                if (queryString) {
+                    try{
+                        const cityList = await searchplace(this.city.id, queryString);
+                        if (cityList instanceof Array) {
+                            cityList.map(item => {
+                                item.value = item.address;
+                                return item;
+                            })
+                            cb(cityList)
+                        }
+                    }catch(err){
+                        console.log(err)
+                    }
+                }
+            },
+            addressSelect(vale){
+                const {address, latitude, longitude} = vale;
+                this.address = {address, latitude, longitude};
+            },
+            handleServiceAvatarScucess(res, file) {
+                if (res.status == 1) {
+                    this.selectTable.image_path = res.image_path;
+                }else{
+                    this.$message.error('上传图片失败！');
+                }
+            },
+            beforeAvatarUpload(file) {
+                const isRightType = (file.type === 'image/jpeg') || (file.type === 'image/png');
+                const isLt2M = file.size / 1024 / 1024 < 2;
+
+                if (!isRightType) {
+                    this.$message.error('上传头像图片只能是 JPG 格式!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传头像图片大小不能超过 2MB!');
+                }
+                return isRightType && isLt2M;
+            },
+            async updateShop(){
+                this.dialogFormVisible = false;
+                try{
+                    Object.assign(this.selectTable, this.address);
+                    this.selectTable.category = this.selectedCategory.join('/');
+                    const res = await updateResturant(this.selectTable)
+                    if (res.status == 1) {
+                        this.$message({
+                            type: 'success',
+                            message: '更新店铺信息成功'
+                        });
+                        this.getResturants();
+                    }else{
+                        this.$message({
+                            type: 'error',
+                            message: res.message
+                        });
+                    }
+                }catch(err){
+                    console.log('更新餐馆信息失败', err);
+                }
+            },
+        },
+    }
+</script>
+
+<!-- <script>
+    import headTop from '../components/headTop'
+    import {baseUrl, baseImgPath} from '@/config/env'
+    import {cityGuess, getResturants, getResturantsCount, foodCategory, updateResturant, searchplace, deleteResturant, shopList, timestampToTime, getUserTypeName} from '@/api/getData'
+
     export default {
         data(){
             return {
@@ -146,7 +416,6 @@
         },
         created(){
             this.initData();
-            console.log(11111)
         },
     	components: {
     		headTop,
@@ -161,6 +430,8 @@
                     }else{
                         throw new Error('获取数据失败');
                     }
+                    this.getResturants();
+                    
                     this.getResturants();
                 }catch(err){
                     console.log('获取数据失败', err);
@@ -201,6 +472,7 @@
                     tableData.name = item.name;
                     tableData.address = item.address;
                     tableData.description = item.description;
+                    tableData.status = "正常/封禁7天";
                     tableData.id = item.id;
                     tableData.phone = item.phone;
                     tableData.rating = item.rating;
@@ -313,7 +585,7 @@
             },
         },
     }
-</script>
+</script> -->
 
 <style lang="less">
 	@import '../style/mixin';

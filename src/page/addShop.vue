@@ -3,56 +3,70 @@
         <head-top></head-top>
         <el-row style="margin-top: 20px;">
   			<el-col :span="12" :offset="4">
-		        <el-form :model="formData" :rules="rules" ref="formData" label-width="110px" class="demo-formData">
-					<el-form-item label="店铺名称" prop="name">
-						<el-input v-model="formData.name"></el-input>
+		        <el-form :model="shopDTO" :rules="rules" ref="formData" label-width="110px" class="demo-formData">
+					<el-form-item label="店铺名称" prop="shopName">
+						<el-input v-model="shopDTO.shopName"></el-input>
 					</el-form-item>
-					<el-form-item label="详细地址" prop="address">
+					<el-form-item label="店铺类型" prop="shopType">
+						<el-radio class="radio" v-model="shopDTO.shopType" label="0">实体店</el-radio>
+						<el-radio class="radio" v-model="shopDTO.shopType" label="1">网店</el-radio>
+  						<el-radio class="radio" v-model="shopDTO.shopType" label="2">活动</el-radio>
+					</el-form-item>
+					<el-form-item label="店铺简介" prop="shopDescription">
+						<el-input v-model="shopDTO.shopDescription"></el-input>
+					</el-form-item>
+					<el-form-item label="城市" prop="shopCity">
+						<el-input v-model="shopDTO.shopCity"></el-input>
+						<span>当前城市：{{city.name}}</span>
+					</el-form-item>
+					<el-form-item label="详细地址" prop="shopAddress">
 						<el-autocomplete
-						  v-model="formData.address"
+						  v-model="shopDTO.shopAddress"
 						  :fetch-suggestions="querySearchAsync"
 						  placeholder="请输入地址"
 						  style="width: 100%;"
 						  @select="addressSelect"
 						></el-autocomplete>
-						<span>当前城市：{{city.name}}</span>
 					</el-form-item>
-					<el-form-item label="联系电话" prop="phone">
-						<el-input v-model.number="formData.phone" maxLength="11"></el-input>
+					<el-form-item label="联系电话" prop="shopPhone">
+						<el-input v-model.number="shopDTO.shopPhone" maxLength="11"></el-input>
 					</el-form-item>
-					<el-form-item label="店铺简介" prop="description">
-						<el-input v-model="formData.description"></el-input>
-					</el-form-item>
-					<el-form-item label="店铺标语" prop="promotion_info">
+					<!-- <el-form-item label="店铺标语" prop="promotion_info">
 						<el-input v-model="formData.promotion_info"></el-input>
-					</el-form-item>
-					<el-form-item label="店铺分类">
+					</el-form-item> -->
+					<!-- <el-form-item label="店铺分类（不要或换成城市）">
 						<el-cascader
 						  :options="categoryOptions"
 						  v-model="selectedCategory"
 						  change-on-select
 						></el-cascader>
+					</el-form-item> -->
+					<el-form-item label="金额" prop="shopCash">
+						<el-input-number v-model="shopDTO.shopCash" :min="0" :max="10000"></el-input-number>
 					</el-form-item>
-					<el-form-item label="店铺特点" style="white-space: nowrap;">
-						<span>品牌保证</span>
+					<el-form-item label="店铺范围" style="white-space: nowrap;" prop="shopArrange">
+						<el-radio class="radio" v-model="shopDTO.shopArrange" label="0">餐饮类</el-radio>
+						<el-radio class="radio" v-model="shopDTO.shopArrange" label="1">服装类</el-radio>
+  						<el-radio class="radio" v-model="shopDTO.shopArrange" label="2">女性类</el-radio>
+						<!-- <span>品牌保证</span>
 						<el-switch on-text="" off-text="" v-model="formData.is_premium"></el-switch>
 						<span>蜂鸟专送</span>
 						<el-switch on-text="" off-text="" v-model="formData.delivery_mode"></el-switch>
 						<span>新开店铺</span>
-						<el-switch on-text="" off-text="" v-model="formData.new"></el-switch>
+						<el-switch on-text="" off-text="" v-model="formData.new"></el-switch> -->
 					</el-form-item>
 					<el-form-item style="white-space: nowrap;">
-						<span>外卖保</span>
+						<el-radio class="radio" v-model="shopDTO.shopArrange" label="3">儿童类</el-radio>
+  						<el-radio class="radio" v-model="shopDTO.shopArrange" label="4">户外类</el-radio>
+  						<el-radio class="radio" v-model="shopDTO.shopArrange" label="5">宠物类</el-radio>
+						<!-- <span>外卖保</span>
 						<el-switch on-text="" off-text="" v-model="formData.bao"></el-switch>
 						<span>准时达</span>
 						<el-switch on-text="" off-text="" v-model="formData.zhun"></el-switch>
 						<span>开发票</span>
-						<el-switch on-text="" off-text="" v-model="formData.piao"></el-switch>
+						<el-switch on-text="" off-text="" v-model="formData.piao"></el-switch> -->
 					</el-form-item>
-					<el-form-item label="配送费" prop="float_delivery_fee">
-						<el-input-number v-model="formData.float_delivery_fee" :min="0" :max="20"></el-input-number>
-					</el-form-item>
-					<el-form-item label="起送价" prop="float_minimum_order_amount">
+					<!-- <el-form-item label="起送价" prop="float_minimum_order_amount">
 						<el-input-number v-model="formData.float_minimum_order_amount" :min="0" :max="100"></el-input-number>
 					</el-form-item>
 					<el-form-item label="营业时间" style="white-space: nowrap;">
@@ -152,9 +166,9 @@
 					          @click="handleDelete(scope.$index)">删除</el-button>
 					    </template>
 					    </el-table-column>
-					</el-table>
+					</el-table> -->
 					<el-form-item class="button_submit">
-						<el-button type="primary" @click="submitForm('formData')">立即创建</el-button>
+						<el-button type="primary" @click="addShopNow()">立即创建</el-button>
 					</el-form-item>
 				</el-form>
   			</el-col>
@@ -164,7 +178,7 @@
 
 <script>
     import headTop from '@/components/headTop'
-    import {cityGuess, addShop, searchplace, foodCategory} from '@/api/getData'
+    import {cityGuess, addShop, searchplace, foodCategory, addShop1} from '@/api/getData'
     import {baseUrl, baseImgPath} from '@/config/env'
     export default {
     	data(){
@@ -193,14 +207,41 @@
        	 			catering_service_license_image: '',
 
 		        },
+		        shopDTO: {
+		        	userId: 131,
+		        	shopId: null,
+		        	shopName: '',
+		        	shopType: null,
+		        	shopDescription: '',
+		        	shopCity: '',
+		        	shopAddress: '',
+		        	shopPhone: null,
+		        	shopArrange: '',
+		        	shopCash: 0,
+		        },
 		        rules: {
-					name: [
+					shopName: [
 						{ required: true, message: '请输入店铺名称', trigger: 'blur' },
 					],
-					address: [
+					shopType: [
+						{ required: true, message: '请选择类型', trigger: 'blur' },
+					],
+					shopDescription: [
+						{ required: true, message: '请描述你的商店', trigger: 'blur' },
+					],
+					shopCity: [
+						{ required: true, message: '请填写城市', trigger: 'blur' },
+					],
+					shopCash: [
+						{ required: true, message: '请输入初始金额', trigger: 'blur' },
+					],
+					shopAddress: [
 						{ required: true, message: '请输入详细地址', trigger: 'blur' }
 					],
-					phone: [
+					shopArrange: [
+						{ required: true, message: '请选择范围', trigger: 'blur' }
+					],
+					shopPhone: [
 						{ required: true, message: '请输入联系电话' },
 						{ type: 'number', message: '电话号码必须是数字' }
 					],
@@ -227,7 +268,9 @@
 			    baseUrl,
 			    baseImgPath,
 			    categoryOptions: [],
-			    selectedCategory: ['快餐便当', '简餐']
+			    selectedCategory: ['快餐便当', '简餐'],
+			    shopType: '0',
+			    shopArrangement: '0'
     		}
     	},
     	components: {
@@ -265,6 +308,29 @@
     				console.log(err);
     			}
     		},
+    		async addShopNow() {
+    			console.log(this.shopDTO);
+    			const res = await addShop1(this.shopDTO)
+    			console.log("res",res)
+    			if (res.status == 200) {
+    				if (res.data.code == 21) {
+    					this.open()
+    				} else if (res.data.code ==20) {
+    					this.$alert('添加失败，请重试', {
+				          confirmButtonText: '确定',
+				          callback: action => {}
+				        });
+    				}
+    			}
+    		},
+    		open() {
+		        this.$alert('已添加商店，即将跳转到商店列表', {
+		          confirmButtonText: '确定',
+		          callback: action => {
+		            this.$router.push('/shopList');
+		          }
+		        });
+		      },
     		async querySearchAsync(queryString, cb) {
     			if (queryString) {
 	    			try{

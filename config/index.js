@@ -27,7 +27,16 @@ module.exports = {
     autoOpenBrowser: true,
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
+    proxyTable: {
+        '/apis':{
+            target: 'http://localhost:8081/',  // 后台api
+            changeOrigin: true,  //是否跨域
+            // secure: true,
+            pathRewrite: {
+              '^/apis': ''   //需要rewrite的,
+            }
+        }
+    },
     context: [ //代理路径
         '/shopping',
         '/ugc',
